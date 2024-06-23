@@ -15,10 +15,10 @@ function executeCode($code, $type) {
             file_put_contents($scriptFile, $code);
             break;
         case 'java':
-            $javaFile = "Main" . ".java";
+            $javaFile = sys_get_temp_dir() . "/ExecClass.java";
             file_put_contents($javaFile, $code);
             $className = 'ExecClass';
-            $command = "javac " . escapeshellarg($javaFile) . " 2> /var/log/code/error.log && java -cp " . escapeshellarg(sys_get_temp_dir()) . " $className 2>> /var/log/code/error.log";
+            $command = "cd " . escapeshellarg(sys_get_temp_dir()) . " && javac " . escapeshellarg($javaFile) . " 2> /var/log/code/error.log && java -cp " . escapeshellarg(sys_get_temp_dir()) . " $className 2>> /var/log/code/error.log";
             break;
         default:
             return "Unsupported code type: $type";
@@ -30,7 +30,7 @@ function executeCode($code, $type) {
     // Remove the temporary script file
     if ($type === 'java') {
         unlink($javaFile);
-        unlink(sys_get_temp_dir() . "/ExecClass.class");
+        unlink("ExecClass.class");
     } else {
         unlink($scriptFile);
     }
