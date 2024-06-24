@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Input Form with Syntax Highlighting</title>
+    <link rel="stylesheet" href="codemirror/codemirror.css">
+    <link rel="stylesheet" href="codemirror/monokai.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .CodeMirror {
+            border: 1px solid #ccc;
+            font-size: 14px;
+            min-height: 300px;
+            /* Approximate height for 20 lines */
+            flex: 1;
+        }
+
+        pre {
+            background-color: black;
+            /* Set background to black */
+            color: #f8f8f2;
+            /* Set text color */
+            padding: 15px;
+            border-radius: 5px;
+            overflow: auto;
+            white-space: pre-wrap;
+            flex: 1;
+            margin: 0;
+            /* Remove default margin */
+        }
+
+        select {
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 8px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Code</h1>
+        <form id="codeForm" style="flex: 0;">
+            <div class="form-group">
+                <label for="language">Select Language:</label>
+                <select id="language" name="language">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="csharp">C#</option>
+                    <option value="cpp">C++</option>
+                    <option value="php">PHP</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <textarea id="code" name="code"></textarea>
+            </div>
+            <button type="button" onclick="submitCode()">Submit</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h1>Output</h1>
+        <pre id="output"></pre>
+    </div>
+
+    <script src="codemirror/codemirror.js"></script>
+    <script src="codemirror/mode/javascript/javascript.js"></script>
+    <script src="codemirror/mode/python/python.js"></script>
+    <script src="codemirror/mode/clike/clike.js"></script>
+    <script src="codemirror/mode/htmlmixed/htmlmixed.js"></script>
+    <script src="codemirror/mode/xml/xml.js"></script>
+    <script src="codemirror/mode/php/php.js"></script>
+
+    <script>
+        // Initialize CodeMirror editor
+        const codeEditor = CodeMirror.fromTextArea(document.getElementById('code'), {
+            lineNumbers: true,
+            mode: 'javascript', // Default mode
+            theme: 'monokai',
+            viewportMargin: Infinity // Allows the editor to grow without additional scrollbars
+        });
+
+        document.getElementById('language').addEventListener('change', function () {
+            const mode = this.value;
+            let cmMode;
+            switch (mode) {
+                case 'javascript':
+                    cmMode = 'javascript';
+                    break;
+                case 'python':
+                    cmMode = 'python';
+                    break;
+                case 'java':
+                    cmMode = 'text/x-java';
+                    break;
+                case 'csharp':
+                    cmMode = 'text/x-csharp';
+                    break;
+                case 'cpp':
+                    cmMode = 'text/x-c++src';
+                    break;
+                case 'php':
+                    cmMode = 'application/x-httpd-php';
+                    break;
+                default:
+                    cmMode = 'javascript';
+            }
+            codeEditor.setOption('mode', cmMode);
+        });
+
+        function submitCode() {
+            const language = document.getElementById('language').value;
+            const code = codeEditor.getValue();
+            const outputElement = document.getElementById('output');
+            outputElement.textContent = ""; // Clear previous output
+
+            if (language === 'javascript') {
+                try {
+                    const result = eval(code);
+                    outputElement.textContent = result;
+                } catch (error) {
+                    outputElement.textContent = `Error: ${error.message}`;
+                    if (error.stack) {
+                        const lineMatch = error.stack.match(/eval.*\<anonymous\>\:(\d+)\:\d+/);
+                        if (lineMatch && lineMatch.length > 1) {
+                            const lineNumber = parseInt(lineMatch[1]);
+                            outputElement.textContent += ` (Line ${lineNumber})`;
+                        }
+                    }
+                }
+            } else {
+                outputElement.textContent = "Output not available for this language.";
+            }
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>

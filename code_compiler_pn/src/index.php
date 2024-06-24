@@ -20,6 +20,22 @@ function executeCode($code, $type) {
             $className = 'ExecClass';
             $command = "cd " . escapeshellarg(sys_get_temp_dir()) . " && javac " . escapeshellarg($javaFile) . " 2> /var/log/code/error.log && java -cp " . escapeshellarg(sys_get_temp_dir()) . " $className 2>> /var/log/code/error.log";
             break;
+        case 'c':
+            $cFile = sys_get_temp_dir() . "/exec.c";
+            file_put_contents($cFile, $code);
+            $outputFile = sys_get_temp_dir() . "/exec.out";
+            $command = "gcc " . escapeshellarg($cFile) . " -o " . escapeshellarg($outputFile) . " 2> /var/log/code/error.log && " . escapeshellarg($outputFile) . " 2>> /var/log/code/error.log";
+            break;
+        case 'cpp':
+            $cppFile = sys_get_temp_dir() . "/exec.cpp";
+            file_put_contents($cppFile, $code);
+            $outputFile = sys_get_temp_dir() . "/exec.out";
+            $command = "g++ " . escapeshellarg($cppFile) . " -o " . escapeshellarg($outputFile) . " 2> /var/log/code/error.log && " . escapeshellarg($outputFile) . " 2>> /var/log/code/error.log";
+            break;
+        case 'php':
+            $command = "php " . escapeshellarg($scriptFile) . " 2> /var/log/code/error.log";
+            file_put_contents($scriptFile, "<?php\n" . $code);
+            break;
         default:
             return "Unsupported code type: $type";
     }
@@ -30,7 +46,10 @@ function executeCode($code, $type) {
     // Remove the temporary script file
     if ($type === 'java') {
         unlink($javaFile);
-        unlink("ExecClass.class");
+        unlink(sys_get_temp_dir() . "/ExecClass.class");
+    } elseif ($type === 'c' || $type === 'cpp') {
+        unlink($cFile ?? $cppFile);
+        unlink($outputFile);
     } else {
         unlink($scriptFile);
     }
@@ -84,8 +103,59 @@ public class ExecClass {
 
 $javaResult = executeCode($javaCode, 'java');
 
+// Example C code execution
+$cCode = '
+#include <stdio.h>
+
+int main() {
+    for (int i = 0; i < 5; i++) {
+        printf("C iteration: %d\\n", i);
+    }
+
+    // Uncomment the following line to cause an error
+    // return 1 / 0;
+
+    return 0;
+}
+';
+
+$cResult = executeCode($cCode, 'c');
+
+// Example C++ code execution
+$cppCode = '
+#include <iostream>
+
+int main() {
+    for (int i = 0; i < 5; i++) {
+        std::cout << "C++ iteration: " << i << std::endl;
+    }
+
+    // Uncomment the following line to cause an error
+    // throw std::runtime_error("This is a test error");
+
+    return 0;
+}
+';
+
+$cppResult = executeCode($cppCode, 'cpp');
+
+// Example PHP code execution
+$phpCode = '
+for ($i = 0; $i < 5; $i++) {
+    echo "PHP iteration: $i\\n";
+}
+
+// Uncomment the following line to cause an error
+// throw new Exception("This is a test error");
+';
+
+$phpResult = executeCode($phpCode, 'php');
+
 // Output the results
 echo "Python Result:<br>" . nl2br($pythonResult) . "<br><br>";
 echo "Node.js Result:<br>" . nl2br($nodeResult) . "<br><br>";
-echo "Java Result:<br>" . nl2br($javaResult);
+echo "Java Result:<br>" . nl2br($javaResult) . "<br><br>";
+echo "C Result:<br>" . nl2br($cResult) . "<br><br>";
+echo "C++ Result:<br>" . nl2br($cppResult) . "<br><br>";
+echo "PHP Result:<br>" . nl2br($phpResult) . "<br><br>";
 ?>
