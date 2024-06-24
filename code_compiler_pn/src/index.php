@@ -95,16 +95,15 @@ $requestUri = $_SERVER['REQUEST_URI'];
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
 if ($requestMethod === 'POST') {
-    echo json_encode($_SERVER['REQUEST_URI']);
-    // echo json_encode(["error" => "Invalid request method"]);
-    // switch ($_SERVER['REQUEST_URI']) {
-    //     case '/execute':
-    //         handleRequest();
-    //         break;
-    //     default:
-    //         echo json_encode(["error" => "Invalid endpoint"]);
-            // handleRequest();
-            // break;      
+    // create an array of languages that are supported
+    $supportedLanguages = ['python', 'node', 'java', 'c', 'cpp', 'php'];
+    
+    // check if the request body contains type as one of the supported languages
+    $input = getJsonInput();
+    if (!$input || !isset($input['type']) || !in_array($input['type'], $supportedLanguages)) {
+        echo json_encode(["error" => "Invalid input"]);
+        return;
+    }
 }
 else {
     echo json_encode(["error" => "Invalid request method"]);
