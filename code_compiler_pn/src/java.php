@@ -14,35 +14,35 @@ function executeCode($code, $type) {
     $scriptFile = tempnam(sys_get_temp_dir(), 'exec');
     
     switch ($type) {
-        case 'python':
-            $code = 
-
-'import json
-'. $code .
-'
-def return_json():
-    # Save the returned value to a variable
-    result = create_value()
-    
-    # Convert the result to JSON format
-    json_result = json.dumps({"result": result})
-    
-    # Return the JSON string
-    return json_result
-
-print(return_json());
-';
-            $command = "python3 " . escapeshellarg($scriptFile) . " 2>&1";
-            file_put_contents($scriptFile, $code);
+        case 'java':
+            $code = "import java.util.*;
+                    import org.json.*;
+                    public class Main {
+                        public static void main(String[] args) {
+                            Solution solution = new Solution();
+                            Object result = solution.createValue();
+                            System.out.println(new JSONObject().put(\"result\", result));
+                        }
+                    }".$code;
+            $javaFile = sys_get_temp_dir() . "/Main.java";
+            file_put_contents($javaFile, $code);
+            $command = "cd " . escapeshellarg(sys_get_temp_dir()) . " && java " . 
+            " $javaFile 2>> /var/log/code/error.log";
+            
             break;
         default:
             return ["error" => "Unsupported code type: $type"];
     }
 
     exec($command, $output, $returnCode);
-    
-    unlink($scriptFile);
-    
+
+    if ($type === 'java') {
+        unlink($javaFile);
+    }  
+    else {
+        unlink($scriptFile);
+    }
+
     // If the return code is non-zero, log the error and return it
     if ($returnCode === 0) {
         $jsonOutput = implode("\n", $output);
@@ -54,7 +54,6 @@ print(return_json());
         $errorLog = file_get_contents('/var/log/code/error.log');
         return "Error Log: <br>" . nl2br($errorLog);
     }
-
 }
 
 // Helper function to get JSON input
@@ -81,8 +80,9 @@ function handleRequest() {
         return;
     }
 
-
-    echo json_encode(["output" => $result['output']]);
+    $output = $result['output'];
+    $expected = trim($expected);
+    echo json_encode(["output" => $output]);
 }
 
 // Route the request to the appropriate handler based on the URL

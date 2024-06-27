@@ -26,17 +26,21 @@ function executeCode($code, $type) {
         //     break;
         case 'java':
             $code = "import java.util.*;
+                    import org.json.*;
                     public class Main {
                         public static void main(String[] args) {
                             Solution solution = new Solution();
                             Object result = solution.createValue();
-                            System.out.println(result);
+                            System.out.println(new JSONObject().put(\"result\", result));
                         }
                     }".$code;
             $javaFile = sys_get_temp_dir() . "/Main.java";
             file_put_contents($javaFile, $code);
-            $className = 'Main';
-            $command = "cd " . escapeshellarg(sys_get_temp_dir()) . " && javac " . escapeshellarg($javaFile) . " 2> /var/log/code/error.log && java -cp " . escapeshellarg(sys_get_temp_dir()) . " $className 2>> /var/log/code/error.log";
+            // $className = 'Main';
+            // $command = "cd " . escapeshellarg(sys_get_temp_dir()) . " && javac " . escapeshellarg($javaFile) . " 2> /var/log/code/error.log && java -cp " . escapeshellarg(sys_get_temp_dir()) . " $className 2>> /var/log/code/error.log";
+            $command = "cd " . escapeshellarg(sys_get_temp_dir()) . " && java " . 
+            " $javaFile 2>> /var/log/code/error.log";
+            
             break;
         // case 'c':
         //     $x = '#include <stdio.h>
@@ -118,13 +122,16 @@ function executeCode($code, $type) {
     }
 
     // If the return code is non-zero, log the error and return it
-    if ($returnCode !== 0) {
+    if ($returnCode === 0) {
+        $jsonOutput = implode("\n", $output);
+        $arrayResult = json_decode($jsonOutput, true);
+        
+        return ["output"=>$arrayResult];
+    }
+    else{
         $errorLog = file_get_contents('/var/log/code/error.log');
         return "Error Log: <br>" . nl2br($errorLog);
     }
-    
-
-    return ["output" => $output];
 }
 
 // Helper function to get JSON input

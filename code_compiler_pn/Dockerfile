@@ -24,7 +24,7 @@ RUN apt-get install -y dotnet-sdk-6.0
 COPY json-20240303.jar /usr/local/lib/json-20240303.jar
 
 # Add the jar file to the classpath
-# ENV CLASSPATH /usr/local/lib/json-20240303.jar
+ENV CLASSPATH /usr/local/lib/json-20240303.jar
 
 
 # Copy custom PHP configuration file
