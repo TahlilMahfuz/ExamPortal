@@ -6,7 +6,9 @@ RUN apt-get update
 RUN apt-get install -y python3 python3-pip     
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -    
 RUN apt-get install -y nodejs
-RUN apt-get install -y maven 
+RUN apt-get install -y maven
+RUN apt-get install -y git
+RUN apt-get install -y vim
 
 # Install Java
 RUN apt-get install -y default-jdk
@@ -17,6 +19,12 @@ RUN wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod
 RUN dpkg -i packages-microsoft-prod.deb 
 RUN apt-get update 
 RUN apt-get install -y dotnet-sdk-6.0
+
+# Copy the JSON library to the container
+COPY json-20240303.jar /usr/local/lib/json-20240303.jar
+
+# Add the jar file to the classpath
+# ENV CLASSPATH /usr/local/lib/json-20240303.jar
 
 
 # Copy custom PHP configuration file
