@@ -89,6 +89,7 @@
                     <option value="java">Java</option>
                     <!-- <option value="csharp">C#</option> -->
                     <option value="cpp">C++</option>
+                    <option value="c">C</option>
                     <option value="php">PHP</option>
                     <!-- Add more options as needed -->
                 </select>
@@ -150,31 +151,6 @@
             codeEditor.setOption('mode', cmMode);
         });
 
-        // function submitCode() {
-        //     const language = document.getElementById('language').value;
-        //     const code = codeEditor.getValue();
-        //     const outputElement = document.getElementById('output');
-        //     outputElement.textContent = ""; // Clear previous output
-
-        //     if (language === 'javascript') {
-        //         try {
-        //             const result = eval(code);
-        //             outputElement.textContent = result;
-        //         } catch (error) {
-        //             outputElement.textContent = `Error: ${error.message}`;
-        //             if (error.stack) {
-        //                 const lineMatch = error.stack.match(/eval.*\<anonymous\>\:(\d+)\:\d+/);
-        //                 if (lineMatch && lineMatch.length > 1) {
-        //                     const lineNumber = parseInt(lineMatch[1]);
-        //                     outputElement.textContent += ` (Line ${lineNumber})`;
-        //                 }
-        //             }
-        //         }
-        //     } else {
-        //         outputElement.textContent = "Output not available for this language.";
-        //     }
-        // }
-
     async function submitCode() {
         const language = document.getElementById('language').value;
         const code = codeEditor.getValue();
@@ -185,7 +161,6 @@
             code: code,
             type: language,
             expected: "0\n1\n2\n3\n"
-    // Adjust as per your requirement for testing
         };
         console.log(requestBody);
         try {
@@ -202,11 +177,17 @@
 
             if (result.error) {
                 outputElement.textContent = `Error: ${result.error}`;
-            } else if (result.status === "Testcase passed. Output: ") {
-                outputElement.textContent = result.status +'\n'+ result.output;
-            } else if (result.status === "Testcase failed") {
-                outputElement.textContent = `Testcase failed. Expected output:\n${result.output}`;
-            } else {
+            } 
+            // else if (result.status === "Testcase passed. Output: ") {
+            //     outputElement.textContent = result.status +'\n'+ result.output;
+            // } 
+            // else if (result.status === "Testcase failed") {
+            //     outputElement.textContent = `Testcase failed. Expected output:\n${result.output}`;
+            // }
+            else if (result.output) {
+                outputElement.textContent = result.output;
+            }
+            else {
                 outputElement.textContent = "Unexpected response from server";
             }
         } catch (error) {
