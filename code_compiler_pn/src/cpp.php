@@ -14,28 +14,38 @@ function executeCode($code, $type) {
     $scriptFile = tempnam(sys_get_temp_dir(), 'exec');
     
     switch ($type) {
-        case 'javascript':
-            $code = $code .= "function main() {
-                        var result = createValue();
-                        console.log(result);
-                    }
 
-                    main();";
-            $command = "node " . escapeshellarg($scriptFile) . " 2>&1";
-            file_put_contents($scriptFile, $code);
-            break;
-        case 'php':
-            $code = $code ."function main() {
-                        \$result = createValue();
-                        print_r(\$result);
-                    }
 
-                    main();";
-            if (stripos($code, '<?php') === false) {
-                $code = "<?php\n" . $code;
-            }
-            file_put_contents($scriptFile, $code);
-            $command = "php " . escapeshellarg($scriptFile) . " 2>&1";
+        case 'cpp':
+            $code =
+            '
+            #include <iostream>
+            #include <bits/stdc++.h>
+#include <vector>
+#include <nlohmann/json.hpp>
+using namespace std;
+using json = nlohmann::json;
+'.
+$code
+.'
+int main() {
+    // Get the vector from the test function
+    vector<int> numbers = test();
+
+    // Create a JSON object and add the vector to it
+    json j;
+    j["result"] = numbers;
+
+    // Print the JSON object
+    cout <<j.dump(4)<< endl;
+
+    return 0;
+}
+';
+            $cppFile = sys_get_temp_dir() . "/exec.cpp";
+            file_put_contents($cppFile, $code);
+            $outputFile = sys_get_temp_dir() . "/exec.out";
+            $command = "g++ " . escapeshellarg($cppFile) . " -o " . escapeshellarg($outputFile) . " && " . escapeshellarg($outputFile) . " 2>&1";
             break;
         default:
             return ["error" => "Unsupported code type: $type"];
@@ -43,7 +53,13 @@ function executeCode($code, $type) {
 
     exec($command, $output, $returnCode);
 
-    unlink($scriptFile);
+    if ($type === 'c' || $type === 'cpp') {
+        unlink($cppFile);
+        unlink($outputFile);
+    } 
+    else {
+        unlink($scriptFile);
+    }
 
     // If the return code is non-zero, log the error and return it
     if ($returnCode === 0) {
@@ -84,12 +100,6 @@ function handleRequest() {
 
     $output = $result['output'];
     $expected = trim($expected);
-
-    // if ($output === $expected) {
-    //     echo json_encode(["status" => "Testcase passed", "output" => $output]);
-    // } else {
-    //     echo json_encode(["status" => "Testcase failed", "output" => $output]);
-    // }
     echo json_encode(["output" => $output]);
 }
 

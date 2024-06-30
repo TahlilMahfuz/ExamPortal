@@ -1,14 +1,22 @@
 # Use the official PHP 8.2 image as a base image
 FROM php:8.2-apache
 
-# Install Python and Node.js
+# Install Python 
 RUN apt-get update     
 RUN apt-get install -y python3 python3-pip     
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -    
+
+# Install Node.js
 RUN apt-get install -y nodejs
-RUN apt-get install -y maven
-RUN apt-get install -y git
+
+# Install vim for text editing(Not mandatory)
 RUN apt-get install -y vim
+
+# Install the JSON library for C++
+RUN apt-get install nlohmann-json3-dev
+
+# Install the JSON library for c
+RUN apt-get install libjansson-dev
 
 # Install Java
 RUN apt-get install -y default-jdk
@@ -18,9 +26,8 @@ RUN apt-get install -y wget
 RUN wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb 
 RUN dpkg -i packages-microsoft-prod.deb 
 RUN apt-get update 
-RUN apt-get install -y dotnet-sdk-6.0
 
-# Copy the JSON library to the container
+# Copy the JSON library to the container for JAVA JSON DUMP
 COPY json-20240303.jar /usr/local/lib/json-20240303.jar
 
 # Add the jar file to the classpath
